@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Song Tracker</title>
+</head>
+<body>
+
+<h2>Add / Update Song</h2>
+
+<input id="songName" placeholder="Song Name" /><br/>
+<input id="youtubeUrl" placeholder="YouTube URL" /><br/>
+<input id="timestamp" type="number" placeholder="Start time (seconds)" /><br/>
+<button onclick="saveSong()">Save</button>
+
+<h2>Songs</h2>
+<ul id="songs"></ul>
+
+<script>
+async function saveSong() {
+  await fetch('http://localhost:3000/songs', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      song_name: songName.value,
+      youtube_url: youtubeUrl.value,
+      start_seconds: Number(timestamp.value)
+    })
+  });
+  loadSongs();
+}
+
+async function loadSongs() {
+  const res = await fetch('http://localhost:3000/songs');
+  const data = await res.json();
+
+  songs.innerHTML = '';
+  data.forEach(s => {
+    const li = document.createElement('li');
+
+    const ytLink = `${s.youtube_url}&t=${s.start_seconds}s`;
+    li.innerHTML = `
+      <b>${s.song_name}</b>
+      - ${ytLink}Play</a>
+    `;
+    songs.appendChild(li);
+  });
+}
+
+loadSongs();
+</script>
+</body>
+</html>
