@@ -183,6 +183,11 @@
 </footer>
 
 <script>
+const songName = document.getElementById('songName');
+const youtubeUrl = document.getElementById('youtubeUrl');
+const timestamp = document.getElementById('timestamp');
+const songsList = document.getElementById('songs');
+
 async function saveSong() {
   await fetch('/songs', {
     method: 'POST',
@@ -204,9 +209,9 @@ async function saveSong() {
 async function loadSongs() {
   const res = await fetch('/songs');
   const data = await res.json();
-  const container = document.getElementById('songs');
 
-  container.innerHTML = '';
+  songsList.innerHTML = '';
+
   data.forEach(song => {
     const li = document.createElement('li');
     li.className = 'song-item';
@@ -215,7 +220,16 @@ async function loadSongs() {
 
     li.innerHTML = `
       <span class="song-name">${song.song_name}</span>
-      <a class="play-btn" href="${link}" target="_blank/script>
+      ${link}Play</a>
+    `;
+
+    songsList.appendChild(li);
+  });
+}
+
+// Load songs on page load
+loadSongs();
+</script>
 
 </body>
 </html>
