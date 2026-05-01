@@ -1,23 +1,190 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Song Tracker</title>
+  <meta charset="UTF-8" />
+  <title>🎵 Song Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --bg: #f4f6fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      padding: 32px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2rem;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: -40px auto 40px;
+      padding: 0 16px;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      margin-bottom: 24px;
+    }
+
+    .card h2 {
+      margin-top: 0;
+      font-size: 1.25rem;
+    }
+
+    .form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 0.95rem;
+    }
+
+    .form input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .form button {
+      grid-column: span 2;
+      padding: 14px;
+      border-radius: 10px;
+      border: none;
+      background: var(--primary);
+      color: white;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .form button:hover {
+      background: var(--primary-dark);
+    }
+
+    .song-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .song-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .song-item:last-child {
+      border-bottom: none;
+    }
+
+    .song-name {
+      font-weight: 600;
+    }
+
+    .play-btn {
+      text-decoration: none;
+      background: var(--primary);
+      color: white;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      transition: background 0.2s ease;
+    }
+
+    .play-btn:hover {
+      background: var(--primary-dark);
+    }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+      padding: 20px;
+    }
+
+    @media (max-width: 600px) {
+      .form {
+        grid-template-columns: 1fr;
+      }
+
+      .form button {
+        grid-column: span 1;
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<h2>Add / Update Song</h2>
+<header>
+  <h1>🎵 Song Tracker</h1>
+  <p>Save your favorite YouTube moments</p>
+</header>
 
-<input id="songName" placeholder="Song Name" /><br/>
-<input id="youtubeUrl" placeholder="YouTube URL" /><br/>
-<input id="timestamp" type="number" placeholder="Start time (seconds)" /><br/>
-<button onclick="saveSong()">Save</button>
+<div class="container">
 
-<h2>Songs</h2>
-<ul id="songs"></ul>
+  <div class="card">
+    <h2>Add / Update Song</h2>
+    <div class="form">
+      <input id="songName" placeholder="Song name (unique)" />
+      <input id="timestamp" type="number" placeholder="Start time (seconds)" />
+      <input id="youtubeUrl" placeholder="YouTube URL" />
+      <button onclick="saveSong()">Save Song</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Saved Songs</h2>
+    <ul id="songs" class="song-list"></ul>
+  </div>
+
+</div>
+
+<footer>
+  Built with ❤️ for music lovers
+</footer>
 
 <script>
 async function saveSong() {
-  await fetch('http://localhost:3000/songs', {
+  await fetch('/songs', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -26,27 +193,29 @@ async function saveSong() {
       start_seconds: Number(timestamp.value)
     })
   });
+
+  songName.value = '';
+  youtubeUrl.value = '';
+  timestamp.value = '';
+
   loadSongs();
 }
 
 async function loadSongs() {
-  const res = await fetch('http://localhost:3000/songs');
+  const res = await fetch('/songs');
   const data = await res.json();
+  const container = document.getElementById('songs');
 
-  songs.innerHTML = '';
-  data.forEach(s => {
+  container.innerHTML = '';
+  data.forEach(song => {
     const li = document.createElement('li');
+    li.className = 'song-item';
 
-    const ytLink = `${s.youtube_url}&t=${s.start_seconds}s`;
+    const link = `${song.youtube_url}&t=${song.start_seconds}s`;
+
     li.innerHTML = `
-      <b>${s.song_name}</b>
-      - ${ytLink}Play</a>
-    `;
-    songs.appendChild(li);
-  });
-}
+      <span class="song-name">${song.song_name}</span>
+      <a class="play-btn" href="${link}" target="_blank/script>
 
-loadSongs();
-</script>
 </body>
 </html>
