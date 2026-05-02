@@ -11,7 +11,6 @@ app.use(express.static('public'));
 
 const fs = require('fs');
 const path = require('path');
-const sqlite3 = require('sqlite3').verbose();
 
 const dbDir = process.env.DB_DIR || '/data';
 
