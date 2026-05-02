@@ -206,21 +206,35 @@ async function saveSong() {
   loadSongs();
 }
 
+
 async function loadSongs() {
   const res = await fetch('/songs');
   const data = await res.json();
+  const container = document.getElementById('songs');
 
-  songsList.innerHTML = '';
+  container.innerHTML = '';
 
   data.forEach(song => {
     const li = document.createElement('li');
     li.className = 'song-item';
 
-    const link = `${song.youtube_url}&t=${song.start_seconds}s`;
+    let link = song.youtube_url;
+
+    // Add timestamp correctly
+    if (link.includes('?')) {
+      link += `&t=${song.start_seconds}s`;
+    } else {
+      link += `?t=${song.start_seconds}s`;
+    }
 
     li.innerHTML = `
       <span class="song-name">${song.song_name}</span>
-      ${link}Play</a>
+      <a
+        class="play-btn"
+        href="${link}"
+        target="_blank"
+        rel="noopener noreferrer"
+</a>
     `;
 
     songsList.appendChild(li);
