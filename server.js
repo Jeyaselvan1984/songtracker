@@ -11,10 +11,21 @@ app.use(express.json());
 app.use(express.static('public'));
 
 
-const dbPath = process.env.DB_PATH ||
-  path.join(__dirname, 'data', 'songs.db');
+const fs = require('fs');
+const path = require('path');
 
-const db = new sqlite3.Database(dbPath)
+const dataDir = '/data';
+
+// Ensure directory exists
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, { recursive: true });
+}
+
+const dbPath = process.env.DB_PATH || path.join(dataDir, 'songs.db');
+
+console.log('Using SQLite DB at:', dbPath);
+
+const db = new sqlite3.Database(dbPath);
 
 
 db.run(`
