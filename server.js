@@ -2,6 +2,9 @@ const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
 
+const path = require('path');
+const { Pool } = require('pg');
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -9,65 +12,66 @@ app.use(express.json());
 // Serve frontend
 app.use(express.static('public'));
 
-const fs = require('fs');
-const path = require('path');
 
-const dbDir = process.env.DB_DIR || '/data';
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production'
+    ? { rejectUnauthorized: false }
+    : false
+});
 
-// Ensure directory exists
-try {
-  if (!fs.existsSync(dbDir)) {
-    fs.mkdirSync(dbDir, { recursive: true });
-  }
-} catch (err) {
-  console.error('Failed to create DB directory:', err);
+async function initDb() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS songs (
+      song_name TEXT PRIMARY KEY,
+      youtube_url TEXT NOT NULL,
+      start_seconds INTEGER NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
 }
 
-const dbPath = path.join(dbDir, 'songs.db');
+initDb().catch(err => {
+  console.error('DB init failed:', err);
+});
 
-console.log('Using SQLite DB at:', dbPath);
+app.post('/songs', async (req, res) => {
+  const { song_name, youtube_url, start_seconds } = req.body;
 
-const db = new sqlite3.Database(dbPath, (err) => {
-  if (err) {
-    console.error('SQLite open error:', err);
-  } else {
-    console.log('SQLite connected');
+  if (!song_name || !youtube_url || start_seconds == null) {
+    return res.status(400).json({ error: 'Missing fields' });
+  }
+
+  try {
+    await pool.query(
+      `
+      INSERT INTO songs (song_name, youtube_url, start_seconds)
+      VALUES ($1, $2, $3)
+      ON CONFLICT (song_name)
+      DO UPDATE SET
+        youtube_url = EXCLUDED.youtube_url,
+        start_seconds = EXCLUDED.start_seconds
+      `,
+      [song_name, youtube_url, start_seconds]
+    );
+
+    res.json({ message: 'Saved successfully' });
+  } catch (err) {
+    console.error('Save failed:', err);
+    res.status(500).json({ error: 'Database error' });
   }
 });
 
-
-db.run(`
-  CREATE TABLE IF NOT EXISTS songs (
-    song_name TEXT PRIMARY KEY,
-    youtube_url TEXT NOT NULL,
-    start_seconds INTEGER NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )
-`);
-
-app.post('/songs', (req, res) => {
-  const { song_name, youtube_url, start_seconds } = req.body;
-
-  const sql = `
-    INSERT INTO songs (song_name, youtube_url, start_seconds)
-    VALUES (?, ?, ?)
-    ON CONFLICT(song_name)
-    DO UPDATE SET
-      youtube_url = excluded.youtube_url,
-      start_seconds = excluded.start_seconds
-  `;
-
-  db.run(sql, [song_name, youtube_url, start_seconds], err => {
-    if (err) return res.status(500).json(err);
-    res.json({ message: 'Saved successfully' });
-  });
-});
-
-app.get('/songs', (req, res) => {
-  db.all(`SELECT * FROM songs ORDER BY created_at DESC`, [], (err, rows) => {
-    if (err) return res.status(500).json(err);
-    res.json(rows);
-  });
+app.get('/songs', async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT * FROM songs ORDER BY created_at DESC'
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Fetch failed:', err);
+    res.status(500).json({ error: 'Database error' });
+  }
 });
 
 const PORT = process.env.PORT || 3000;
