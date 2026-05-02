@@ -10,22 +10,32 @@ app.use(express.json());
 // Serve frontend
 app.use(express.static('public'));
 
-
 const fs = require('fs');
 const path = require('path');
+const sqlite3 = require('sqlite3').verbose();
 
-const dataDir = '/data';
+const dbDir = process.env.DB_DIR || '/data';
 
 // Ensure directory exists
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
+try {
+  if (!fs.existsSync(dbDir)) {
+    fs.mkdirSync(dbDir, { recursive: true });
+  }
+} catch (err) {
+  console.error('Failed to create DB directory:', err);
 }
 
-const dbPath = process.env.DB_PATH || path.join(dataDir, 'songs.db');
+const dbPath = path.join(dbDir, 'songs.db');
 
 console.log('Using SQLite DB at:', dbPath);
 
-const db = new sqlite3.Database(dbPath);
+const db = new sqlite3.Database(dbPath, (err) => {
+  if (err) {
+    console.error('SQLite open error:', err);
+  } else {
+    console.log('SQLite connected');
+  }
+});
 
 
 db.run(`
