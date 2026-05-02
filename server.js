@@ -10,7 +10,7 @@ app.use(express.json());
 // Serve frontend
 app.use(express.static('public'));
 
-const db = new sqlite3.Database('./songs.db');
+const db = new sqlite3.Database('/app/data/songs.db');
 
 db.run(`
   CREATE TABLE IF NOT EXISTS songs (
