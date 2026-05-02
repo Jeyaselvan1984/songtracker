@@ -10,7 +10,12 @@ app.use(express.json());
 // Serve frontend
 app.use(express.static('public'));
 
-const db = new sqlite3.Database('/app/data/songs.db');
+
+const dbPath = process.env.DB_PATH ||
+  path.join(__dirname, 'data', 'songs.db');
+
+const db = new sqlite3.Database(dbPath)
+
 
 db.run(`
   CREATE TABLE IF NOT EXISTS songs (
