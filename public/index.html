@@ -170,12 +170,25 @@
       <button onclick="saveSong()">Save Song</button>
     </div>
   </div>
-
+<input
+  id="searchBox"
+  placeholder="Search songs by keyword..."
+  style="width:100%; padding:10px; margin-bottom:12px;"
+  oninput="renderSongs()"
+/>
+  
   <div class="card">
     <h2>Saved Songs</h2>
     <ul id="songs" class="song-list"></ul>
   </div>
 
+  <button
+  style="margin-top:16px; background:#dc2626"
+  onclick="deleteSelectedSongs()"
+>
+  Delete Selected
+</button>
+  
 </div>
 
 <footer>
@@ -183,7 +196,8 @@
 </footer>
 
 <script>
-const songName = document.getElementById('songName');
+let allSongs = [];
+  const songName = document.getElementById('songName');
 const youtubeUrl = document.getElementById('youtubeUrl');
 const timestamp = document.getElementById('timestamp');
 const songsList = document.getElementById('songs');
@@ -206,40 +220,80 @@ async function saveSong() {
   loadSongs();
 }
 
-
 async function loadSongs() {
   const res = await fetch('/songs');
-  const data = await res.json();
-  const container = document.getElementById('songs');
+  allSongs = await res.json();
+  renderSongs();
+}
 
-  container.innerHTML = '';
+  async function deleteSelectedSongs() {
+  const checked = Array.from(
+    document.querySelectorAll('.song-check:checked')
+  ).map(cb => cb.value);
 
-  data.forEach(song => {
-    const li = document.createElement('li');
-    li.className = 'song-item';
+  if (checked.length === 0) {
+    alert('No songs selected');
+    return;
+  }
 
-    let link = song.youtube_url;
+  const password = prompt('Enter admin password:');
+  if (!password) return;
 
-    // Add timestamp correctly
-    if (link.includes('?')) {
-      link += `&t=${song.start_seconds}s`;
-    } else {
-      link += `?t=${song.start_seconds}s`;
-    }
+  const res = await fetch('/songs', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      song_names: checked,
+      password
+    })
+  });
 
-    li.innerHTML = `
-      <span class="song-name">${song.song_name}</span>
-      <a
+  if (!res.ok) {
+    alert('Invalid password or delete failed');
+    return;
+  }
+
+  alert('Songs deleted');
+  loadSongs();
+}
+function renderSongs() {
+  const keyword = document
+    .getElementById('searchBox')
+    .value
+    .toLowerCase();
+
+  songsList.innerHTML = '';
+
+  allSongs
+    .filter(song =>
+      song.song_name.toLowerCase().includes(keyword)
+    )
+    .forEach(song => {
+      const li = document.createElement('li');
+      li.className = 'song-item';
+
+      let link = song.youtube_url;
+      link += link.includes('?')
+        ? `&t=${song.start_seconds}s`
+        : `?t=${song.start_seconds}s`;
+
+      li.innerHTML = `
+        <label style="display:flex;align-items:center;gap:8px">
+          <input type="checkbox" class="song-check" value="${song.song_name}">
+          <span class="song-name">${song.song_name}</span>
+        </label>
+         <a
         class="play-btn"
         href="${link}"
         target="_blank"
         rel="noopener noreferrer"> Click to Play
 </a>
-    `;
+      `;
 
-    songsList.appendChild(li);
-  });
+      songsList.appendChild(li);
+    });
 }
+
 
 // Load songs on page load
 loadSongs();
