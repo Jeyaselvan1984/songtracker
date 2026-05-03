@@ -61,6 +61,28 @@ app.post('/songs', async (req, res) => {
     res.status(500).json({ error: 'Database error' });
   }
 });
+app.delete('/songs', async (req, res) => {
+  const { song_names, password } = req.body;
+
+  if (password !== 'AskJey') {
+    return res.status(403).json({ error: 'Unauthorized' });
+  }
+
+  if (!Array.isArray(song_names) || song_names.length === 0) {
+    return res.status(400).json({ error: 'No songs selected' });
+  }
+
+  try {
+    await pool.query(
+      `DELETE FROM songs WHERE song_name = ANY($1)`,
+      [song_names]
+    );
+    res.json({ message: 'Songs deleted' });
+  } catch (err) {
+    console.error('Delete failed:', err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
 
 app.get('/songs', async (req, res) => {
   try {
