@@ -253,6 +253,11 @@ const songsList = document.getElementById('songs');
   renderSongs();
 }
 
+function songNameExists(name) {
+  return allSongs.some(
+    song => song.song_name.toLowerCase() === name.toLowerCase()
+  );
+}
 
 
 function clearSelection() {
@@ -265,11 +270,25 @@ selectedSongs.clear();
 
   
 async function saveSong() {
+  const name = songName.value.trim();
+
+  if (!name) {
+    alert('Song name is required');
+    return;
+  }
+
+  if (songNameExists(name)) {
+    const confirmUpdate = confirm(
+      `"${name}" already exists.\n\nDo you want to update it?`
+    );
+    if (!confirmUpdate) return;
+  }
+
   await fetch('/songs', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      song_name: songName.value,
+      song_name: name,
       youtube_url: youtubeUrl.value,
       start_seconds: Number(timestamp.value)
     })
@@ -281,6 +300,7 @@ async function saveSong() {
 
   loadSongs();
 }
+
 
 async function loadSongs() {
   const res = await fetch('/songs');
