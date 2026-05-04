@@ -276,7 +276,18 @@ const songsList = document.getElementById('songs');
 
   songNameInput.addEventListener('input', validateSongName);
 
+function isValidYouTubeUrl(url) {
+  try {
+    const parsed = new URL(url);
 
+    return (
+      parsed.hostname.includes('youtube.com') ||
+      parsed.hostname.includes('youtu.be')
+    );
+  } catch (e) {
+    return false;
+  }
+}
   function clearSearchFilter() {
   const searchBox = document.getElementById('searchBox');
   searchBox.value = '';
@@ -401,10 +412,7 @@ function renderSongs() {
       const li = document.createElement('li');
       li.className = 'song-item';
 
-      let link = song.youtube_url;
-      link += link.includes('?')
-        ? `&t=${song.start_seconds}s`
-        : `?t=${song.start_seconds}s`;
+    
 
       li.innerHTML = `
         <label style="display:flex;align-items:center;gap:8px">
@@ -416,14 +424,34 @@ function renderSongs() {
 />
           <span class="song-name">${song.song_name}</span>
         </label>
-         <a
-        class="play-btn"
-        href="${link}"
-        target="_blank"
-        rel="noopener noreferrer"> Click to Play
+         
+<a
+  class="play-btn"
+  href="#"
+  data
+> Click to Play
 </a>
       `;
       songsList.appendChild(li);
+
+      const playButton = li.querySelector('.play-btn');
+
+playButton.addEventListener('click', (e) => {
+  e.preventDefault();
+
+ // const url = playButton.dataset.url;
+  let link = playButton.dataset.url;;
+      link += link.includes('?')
+        ? `&t=${playButton.dataset.start_seconds}s`
+        : `?t=${playButton.dataset.start_seconds}s`;
+  if (!isValidYouTubeUrl(link)) {
+    alert('Please delete and re-add entry with a valid URL');
+    return;
+  }
+
+  window.open(url, '_blank', 'noopener,noreferrer');
+});
+
 
 const checkbox = li.querySelector('.song-check');
 
