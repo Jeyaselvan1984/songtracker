@@ -29,8 +29,14 @@
 }
 
     .app-header {
-  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  
+background: linear-gradient(
+    135deg,
+    var(--primary),
+    var(--primary-dark)
+  );
   color: white;
+
   padding: 32px;
 }
 .header-icon {
@@ -55,14 +61,21 @@
 }
 
     :root {
-      --primary: #6366f1;
-      --primary-dark: #4f46e5;
-      --bg: #f4f6fb;
-      --card: #ffffff;
-      --text: #1f2937;
-      --muted: #6b7280;
-      --border: #e5e7eb;
-    }
+  /* Crosspoint-inspired theme */
+  --primary: #1f3a5f;        /* Deep blue */
+  --primary-dark: #162a44;   /* Darker blue */
+  --accent: #8b1d1d;         /* Cross red */
+
+  --bg: #f6f8fb;             /* Soft neutral background */
+  --card: #ffffff;
+
+  --text: #1f2937;           /* Charcoal text */
+  --muted: #6b7280;
+
+  --border: #e5e7eb;
+
+  --danger: #b91c1c;
+}
 
     * {
       box-sizing: border-box;
@@ -131,7 +144,10 @@
 
     .form input:focus {
       outline: none;
-      border-color: var(--primary);
+      
+border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(31, 58, 95, 0.15)
+
     }
 
     .form button {
@@ -147,6 +163,14 @@
       transition: background 0.2s ease;
     }
 
+.danger-btn {
+  background: var(--danger);
+}
+
+.danger-btn:hover {
+  background: #991b1b;
+}
+
     .form button:hover {
       background: var(--primary-dark);
     }
@@ -158,6 +182,7 @@
     }
 
     .song-item {
+      background-color: #f1f5f9;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -229,12 +254,14 @@
 
     }
     .input-error {
-  border-color: #dc2626 !important;
-  background-color: #fef2f2;
+  
+  border-color: var(--danger) !important;
+  background-color: #fff5f5;
+
 }
 
 .error-text {
-  color: #dc2626;
+  color: var(--danger);
   font-size: 0.85rem;
   margin-top: 6px;
   display: none;
@@ -311,10 +338,7 @@ button:disabled {
     <ul id="songs" class="song-list"></ul>
   </div>
 
-  <button
-  style="margin-top:16px; background:#dc2626"
-  onclick="deleteSelectedSongs()"
->
+  <button class="danger-btn" onclick="deleteSelectedSongs()">
   Delete Selected
 </button>
   
