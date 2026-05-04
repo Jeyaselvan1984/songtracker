@@ -221,9 +221,10 @@ const songsList = document.getElementById('songs');
 
 
 function clearSelection() {
-  document
-    .querySelectorAll('.song-check:checked')
-    .forEach(cb => cb.checked = false);
+ 
+selectedSongs.clear();
+  renderSongs();
+
 }
 
 
