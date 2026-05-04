@@ -428,27 +428,42 @@ function renderSongs() {
 <a
   class="play-btn"
   href="#"
-> Click to Play
+  data-url="${song.youtube_url}"
+  data-start-seconds="${song.start_seconds}"
+>
+  Click to Play
 </a>
+
       `;
       songsList.appendChild(li);
 
-      const playButton = li.querySelector('.play-btn');
+   const playButton = li.querySelector('.play-btn');
 
 playButton.addEventListener('click', (e) => {
   e.preventDefault();
 
- // const url = playButton.dataset.url;
-  let link = playButton.dataset.url;;
-      link += link.includes('?')
-        ? `&t=${playButton.dataset.start_seconds}s`
-        : `?t=${playButton.dataset.start_seconds}s`;
-  if (!isValidYouTubeUrl(link)) {
+  let url = playButton.dataset.url;
+  const startSeconds = playButton.dataset.startSeconds;
+
+  // Safety check
+  if (!url) {
     alert('Please delete and re-add entry with a valid URL');
     return;
   }
 
-  window.open(link, '_blank', 'noopener,noreferrer');
+  // Append timestamp correctly
+  if (url.includes('?')) {
+    url += `&t=${startSeconds}s`;
+  } else {
+    url += `?t=${startSeconds}s`;
+  }
+
+  if (!isValidYouTubeUrl(url)) {
+    alert('Please delete and re-add entry with a valid URL');
+    return;
+  }
+
+  window.open(url, '_blank', 'noopener,noreferrer');
 });
 
 
