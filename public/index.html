@@ -170,6 +170,23 @@
         grid-column: span 1;
       }
     }
+    .input-error {
+  border-color: #dc2626 !important;
+  background-color: #fef2f2;
+}
+
+.error-text {
+  color: #dc2626;
+  font-size: 0.85rem;
+  margin-top: 6px;
+  display: none;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
   </style>
 </head>
 
@@ -199,9 +216,14 @@
     <h2>Add / Update Song</h2>
     <div class="form">
       <input id="songName" placeholder="Song name (unique)" />
+
+<div id="songNameError" class="error-text">
+  Song name already exists
+</div>
+``
       <input id="timestamp" type="number" placeholder="Start time (seconds)" />
       <input id="youtubeUrl" placeholder="YouTube URL" />
-      <button onclick="saveSong()">Save Song</button>
+      <button id="saveButton" onclick="saveSong()">Save Song</button>
     </div>
   </div>
 <input
@@ -242,10 +264,18 @@
 <script>
 let allSongs = [];
   let selectedSongs = new Set();
+
+
+const songNameInput = document.getElementById('songName');
+const songNameError = document.getElementById('songNameError');
+const saveButton = document.getElementById('saveButton');
   const songName = document.getElementById('songName');
 const youtubeUrl = document.getElementById('youtubeUrl');
 const timestamp = document.getElementById('timestamp');
 const songsList = document.getElementById('songs');
+
+  songNameInput.addEventListener('input', validateSongName);
+
 
   function clearSearchFilter() {
   const searchBox = document.getElementById('searchBox');
@@ -270,6 +300,7 @@ selectedSongs.clear();
 
   
 async function saveSong() {
+   if (saveButton.disabled) return;
   const name = songName.value.trim();
 
   if (!name) {
@@ -301,7 +332,23 @@ async function saveSong() {
   loadSongs();
 }
 
+function validateSongName() {
+  const name = songNameInput.value.trim().toLowerCase();
 
+  const exists = allSongs.some(
+    song => song.song_name.toLowerCase() === name
+  );
+
+  if (exists) {
+    songNameInput.classList.add('input-error');
+    songNameError.style.display = 'block';
+    saveButton.disabled = true;
+  } else {
+    songNameInput.classList.remove('input-error');
+    songNameError.style.display = 'none';
+    saveButton.disabled = false;
+  }
+}
 async function loadSongs() {
   const res = await fetch('/songs');
   allSongs = await res.json();
