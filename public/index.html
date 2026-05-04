@@ -9,6 +9,27 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
+    .app-header {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  padding: 32px;
+}
+.header-icon {
+  opacity: 0.9;
+}
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.header-icon {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+}
+
     :root {
       --primary: #6366f1;
       --primary-dark: #4f46e5;
@@ -154,10 +175,23 @@
 
 <body>
 
-<header>
+
+<header class="app-header">
+  <div class="header-content">
+    <img
+      src="crosspoint-icon.jpg"
+      alt="Crosspoint CRC logo"
+      class="header-icon"
+    />
+    <div>
+
   <h1>🎵 Crosspoint-CRC, Brampton <br> Youtube Song Tracker</h1>
   <p>Collection of all video links with timestamp from our worship service</p>
+
+ </div>
+  </div>
 </header>
+
 
 <div class="container">
 
