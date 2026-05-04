@@ -176,6 +176,15 @@
   style="width:100%; padding:10px; margin-bottom:12px;"
   oninput="renderSongs()"
 />
+  <div style="display:flex; gap:8px; margin-bottom:12px;">
+  <button onclick="clearSearchFilter()">
+    Remove search filter
+  </button>
+
+  <button onclick="clearSelection()">
+    Clear selection
+  </button>
+</div>
   
   <div class="card">
     <h2>Saved Songs</h2>
@@ -197,11 +206,28 @@
 
 <script>
 let allSongs = [];
+  let selectedSongs = new Set();
   const songName = document.getElementById('songName');
 const youtubeUrl = document.getElementById('youtubeUrl');
 const timestamp = document.getElementById('timestamp');
 const songsList = document.getElementById('songs');
 
+  function clearSearchFilter() {
+  const searchBox = document.getElementById('searchBox');
+  searchBox.value = '';
+  renderSongs();
+}
+
+
+
+function clearSelection() {
+  document
+    .querySelectorAll('.song-check:checked')
+    .forEach(cb => cb.checked = false);
+}
+
+
+  
 async function saveSong() {
   await fetch('/songs', {
     method: 'POST',
@@ -279,7 +305,12 @@ function renderSongs() {
 
       li.innerHTML = `
         <label style="display:flex;align-items:center;gap:8px">
-          <input type="checkbox" class="song-check" value="${song.song_name}">
+          <input
+  type="checkbox"
+  class="song-check"
+  value="${song.song_name}"
+  ${selectedSongs.has(song.song_name) ? 'checked' : ''}
+/>
           <span class="song-name">${song.song_name}</span>
         </label>
          <a
@@ -289,8 +320,18 @@ function renderSongs() {
         rel="noopener noreferrer"> Click to Play
 </a>
       `;
-
       songsList.appendChild(li);
+
+const checkbox = li.querySelector('.song-check');
+
+checkbox.addEventListener('change', () => {
+  if (checkbox.checked) {
+    selectedSongs.add(song.song_name);
+  } else {
+    selectedSongs.delete(song.song_name);
+  }
+});
+      
     });
 }
 
